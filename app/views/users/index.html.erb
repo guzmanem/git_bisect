@@ -1,0 +1,308 @@
+<div class="row justify-content-center">
+  <div class="col-lg-11">
+    <div class="card shadow-lg border-0">
+      <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h2 class="mb-0">
+              <i class="fas fa-users me-3"></i>
+              DataTable de Usuarios
+            </h2>
+            <p class="mb-0 opacity-75">Gestión completa de usuarios - Ejemplo Git Bisect</p>
+          </div>
+          <%= link_to new_user_path, class: "btn btn-light btn-lg shadow-sm" do %>
+            <i class="fas fa-plus me-2"></i>
+            Nuevo Usuario
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card-body p-4">
+        <!-- Filtros -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-light">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input type="text" id="searchInput" class="form-control" placeholder="Buscar usuarios...">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select id="roleFilter" class="form-select">
+              <option value="">Todos los roles</option>
+              <option value="admin">Administrador</option>
+              <option value="moderator">Moderador</option>
+              <option value="user">Usuario</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="statusFilter" class="form-select">
+              <option value="">Todos los estados</option>
+              <option value="true">Activos</option>
+              <option value="false">Inactivos</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="card bg-primary text-white">
+              <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3 class="mb-0"><%= @users.count %></h3>
+                <small>Total Usuarios</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-success text-white">
+              <div class="card-body text-center">
+                <i class="fas fa-user-check fa-2x mb-2"></i>
+                <h3 class="mb-0"><%= @users.where(active: true).count %></h3>
+                <small>Activos</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-warning text-white">
+              <div class="card-body text-center">
+                <i class="fas fa-user-shield fa-2x mb-2"></i>
+                <h3 class="mb-0"><%= @users.where(role: 'admin').count %></h3>
+                <small>Administradores</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-info text-white">
+              <div class="card-body text-center">
+                <i class="fas fa-user-cog fa-2x mb-2"></i>
+                <h3 class="mb-0"><%= @users.where(role: 'moderator').count %></h3>
+                <small>Moderadores</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DataTable -->
+        <div class="table-responsive">
+          <table id="usersTable" class="table table-hover table-striped" style="width:100%">
+            <thead class="table-dark">
+              <tr>
+                <th><i class="fas fa-user me-2"></i>Nombre</th>
+                <th><i class="fas fa-envelope me-2"></i>Email</th>
+                <th><i class="fas fa-phone me-2"></i>Teléfono</th>
+                <th><i class="fas fa-map-marker-alt me-2"></i>Ciudad</th>
+                <th><i class="fas fa-user-tag me-2"></i>Rol</th>
+                <th><i class="fas fa-toggle-on me-2"></i>Estado</th>
+                <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @users.each do |user| %>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                           style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-white"></i>
+                      </div>
+                      <div>
+                        <strong><%= user.name %></strong>
+                        <br>
+                        <small class="text-muted">ID: <%= user.id %></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <a href="mailto:<%= user.email %>" class="text-decoration-none">
+                      <%= user.email %>
+                    </a>
+                  </td>
+                  <td>
+                    <% if user.phone.present? %>
+                      <a href="tel:<%= user.phone %>" class="text-decoration-none">
+                        <%= user.phone %>
+                      </a>
+                    <% else %>
+                      <span class="text-muted">—</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if user.city.present? %>
+                      <i class="fas fa-map-marker-alt text-muted me-1"></i>
+                      <%= user.city %>
+                    <% else %>
+                      <span class="text-muted">—</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <span class="badge bg-<%= case user.role
+                                         when 'admin' then 'danger'
+                                         when 'moderator' then 'warning'
+                                         else 'secondary'
+                                         end %> fs-6">
+                      <i class="fas fa-<%= case user.role
+                                        when 'admin' then 'crown'
+                                        when 'moderator' then 'user-shield'
+                                        else 'user'
+                                        end %> me-1"></i>
+                      <%= user.role.capitalize %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-<%= user.active? ? 'success' : 'secondary' %> fs-6">
+                      <i class="fas fa-<%= user.active? ? 'check-circle' : 'times-circle' %> me-1"></i>
+                      <%= user.active? ? 'Activo' : 'Inactivo' %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <%= link_to user_path(user), class: "btn btn-sm btn-outline-primary", title: "Ver" do %>
+                        <i class="fas fa-eye"></i>
+                      <% end %>
+                      <%= link_to edit_user_path(user), class: "btn btn-sm btn-outline-warning", title: "Editar" do %>
+                        <i class="fas fa-edit"></i>
+                      <% end %>
+                      <%= link_to user_path(user), method: :delete, 
+                          confirm: "¿Estás seguro de eliminar a #{user.name}?",
+                          class: "btn btn-sm btn-outline-danger", title: "Eliminar" do %>
+                        <i class="fas fa-trash"></i>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Inicializar DataTable
+    var table = $('#usersTable').DataTable({
+        "language": {
+            "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+        },
+        "pageLength": 10,
+        "responsive": true,
+        "ordering": true,
+        "searching": true,
+        "lengthChange": true,
+        "info": true,
+        "autoWidth": false,
+        "columnDefs": [
+            { "orderable": false, "targets": 6 } // Columna de acciones no ordenable
+        ],
+        "order": [[ 0, "asc" ]], // Ordenar por nombre por defecto
+        "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        "drawCallback": function(settings) {
+            // Animar las filas cuando se redibuja la tabla
+            $('#usersTable tbody tr').addClass('fade-in');
+        }
+    });
+
+    // Búsqueda personalizada
+    $('#searchInput').on('keyup', function() {
+        table.search(this.value).draw();
+    });
+
+    // Filtro por rol
+    $('#roleFilter').on('change', function() {
+        var role = this.value;
+        if (role === '') {
+            table.column(4).search('').draw();
+        } else {
+            table.column(4).search(role).draw();
+        }
+    });
+
+    // Filtro por estado
+    $('#statusFilter').on('change', function() {
+        var status = this.value;
+        if (status === '') {
+            table.column(5).search('').draw();
+        } else {
+            var searchTerm = status === 'true' ? 'Activo' : 'Inactivo';
+            table.column(5).search(searchTerm).draw();
+        }
+    });
+
+    // Efectos de hover suaves
+    $('#usersTable tbody').on('mouseenter', 'tr', function() {
+        $(this).addClass('table-active');
+    }).on('mouseleave', 'tr', function() {
+        $(this).removeClass('table-active');
+    });
+});
+</script>
+
+<style>
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    border-radius: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.avatar {
+    font-size: 16px;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn {
+    margin: 0 1px;
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.stats-card {
+    transition: transform 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: scale(1.02);
+}
+
+#usersTable_wrapper .dataTables_filter {
+    display: none;
+}
+
+#usersTable_wrapper .dataTables_length {
+    margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+    color: white !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+    color: white !important;
+}
+</style>
